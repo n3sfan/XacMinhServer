@@ -1,0 +1,143 @@
+import java.nio.file.Files
+
+plugins {
+    id "org.springframework.boot" version "2.7.0"
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+}
+
+group 'me.lethinh.xacminhserver'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    runtime.exclude module: 'spring-boot-starter-logging'
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation 'org.ow2.asm:asm:9.3'
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.7.0'
+    testImplementation('org.springframework.boot:spring-boot-starter-test:2.7.0') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.0'
+    implementation 'com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    implementation 'com.google.guava:guava:31.1-jre'
+
+    modules {
+        module("org.springframework.boot:spring-boot-starter-logging") {
+            replacedBy("org.springframework.boot:spring-boot-starter-log4j2")
+        }
+    }
+}
+
+bootJar {
+    mainClass = 'me.lethinh.xacminhserver.XacMinhApplication'
+}
+
+jar {
+    from {
+        configurations.runtimeClasspath.collect { it.name.contains("asm") ? zipTree(it) : null }
+    }
+    from {
+        configurations.runtimeClasspath.filter { !it.name.contains("asm") }.forEach { File file ->
+            copy {
+                from file.absolutePath
+                into "$buildDir/libs/libs"
+            }
+        }
+    }
+
+    manifest {
+        attributes 'Main-Class': 'me.lethinh.xacminhserver.XacMinhServer',
+                'Class-Path': configurations.runtimeClasspath.collect { './libs/' + it.name }.join(' ')
+    }
+}
+
+def jarName = "$project.name-$project.version"
+
+task copyJar(type: Copy, dependsOn: 'obfuscate') {
+//    from "$buildDir/libs/$project.name/${jarName}.jar"
+//    into "/home/nesfan/Desktop/Server-1.12.2/plugins/"
+}
+
+task obfuscate {
+    doLast {
+        def obfDir = 'D:\\Workspace\\ProductionExport\\Obfuscator'
+        def ioDir = obfDir + "/in_out/$project.name"
+
+        delete {
+            delete "$obfDir/in_out/$project.name/lib"
+            delete "$obfDir/in_out/$project.name/BOOT-INF"
+            delete "$obfDir/in_out/$project.name/classes"
+            delete "$obfDir/in_out/$project.name/classes-obf"
+            delete "$ioDir/XacMinhServer"
+        }
+        copy {
+            from "$buildDir/libs/${jarName}.jar"
+            into "$obfDir/in_out/$project.name"
+        }
+        exec {
+            workingDir "$buildDir/libs"
+            commandLine 'jar', 'xf', "${jarName}.jar", 'BOOT-INF/classes/me'
+        }
+        exec {
+            workingDir "$buildDir/libs"
+            commandLine 'jar', 'xf', "${jarName}.jar", 'BOOT-INF/classes/a'
+        }
+        exec {
+            workingDir "$buildDir/libs"
+            commandLine 'jar', 'xf', "${jarName}.jar", 'BOOT-INF/lib'
+        }
+        ant.move file: "$buildDir/libs/BOOT-INF/classes", todir: "$obfDir/in_out/$project.name/"
+        ant.move file: "$buildDir/libs/BOOT-INF/lib", todir: "$obfDir/in_out/$project.name/"
+        exec {
+            workingDir obfDir + '/proguard/bin'
+            commandLine 'cmd', '/c', 'proguard.bat', '@../../config/server-config'
+        }
+        // BEGIN EDIT
+//        exec {
+//            workingDir ioDir
+//            commandLine 'jar', 'xf', "${jarName}-obf.jar", "BOOT-INF/classes"
+//        }
+//        copy {
+//            from "$ioDir/BOOT-INF/classes/"
+//            include "**/*"
+//            into "$ioDir/classes-obf"
+//        }
+//        //ant.move file: "$ioDir/BOOT-INF/classes/", todir: "$ioDir/classes-obf"
+//        delete {
+//            delete "$ioDir/BOOT-INF"
+//        }
+        // END
+        exec {
+            workingDir obfDir
+            commandLine 'java', '-jar', 'Stringer/stringer.jar',
+                    '-configFile', 'config/server-stringer-config.xml',
+                    '-proguardMapFile', 'mapping/server_mapping',
+                    "in_out/$project.name/classes-obf", "in_out/$project.name/BOOT-INF/classes"
+        }
+        exec {
+            executable 'C:/Program Files/7-Zip/7z.exe'
+            args 'd', '-r', "$ioDir/${jarName}.jar", "BOOT-INF/classes/me"
+        }
+        exec {
+            workingDir ioDir
+            commandLine 'jar', 'uf', "${jarName}.jar", 'BOOT-INF/'
+        }
+        copy {
+            from "$obfDir/in_out/$project.name/${jarName}.jar"
+            into "D:\\Workspace\\ProductionExport\\Export Result\\XacMinhServer"
+        }
+    }
+}
