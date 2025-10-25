@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<stringer-v3>
+    <signMode>none</signMode>
+    <verbose>true</verbose>
+    <optimize>false</optimize>
+    <protectionElements>
+        <protectionElement>
+            <stringEncryption>
+                <mode>filter</mode>
+                <filters>
+                    <filter><![CDATA[**/**]]></filter>
+                </filters>
+                <checkCaller>true</checkCaller>
+                <equalsIntrinsicEnabled>false</equalsIntrinsicEnabled>
+            </stringEncryption>
+            <hideAccess>
+                <mode>filter</mode>
+                <filters>
+                    <filter><![CDATA[**/**]]></filter>
+                </filters>
+            </hideAccess>
+            <resourceEncryption>
+                <mode>filter</mode>
+                <filters>
+                    <filter><![CDATA[**/**]]></filter>
+                    <filter><![CDATA[!com/jacob/**]]></filter>
+                </filters>
+            </resourceEncryption>
+            <integrityControl>
+                <mode>filter</mode>
+                <checkBytecode>true</checkBytecode>
+                <checkJar>true</checkJar>
+                <sealJar>true</sealJar>
+                <osgiCompatibility>false</osgiCompatibility>
+            </integrityControl>
+        </protectionElement>
+    </protectionElements>
+</stringer-v3>

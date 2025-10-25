@@ -2,11 +2,13 @@ package me.lethinh.xacminhserver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.ApplicationPidFileWriter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
@@ -21,9 +23,12 @@ public class XacMinhApplication implements ApplicationRunner, WebMvcConfigurer {
     public static String DATABASE_PATH;
     private static final Logger LOGGER = LogManager.getLogger("XacMinh");
 
+
     /* ApplicationRunner */
     @Override
     public void run(ApplicationArguments args) {
+//        Utils.checkLicense();
+        LOGGER.info("XacMinh Server - By Nesfan");
         LOGGER.info("XacMinh Server da duoc mo thanh cong!");
         DATABASE_PATH = Paths.get(args.getOptionValues("serverPath").get(0), "plugins/XacMinh/xacminh.db").toString();
     }
@@ -31,6 +36,7 @@ public class XacMinhApplication implements ApplicationRunner, WebMvcConfigurer {
     /* WebMvcConfigurer */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+//        Utils.checkLicense();
         registry.addInterceptor(new RateLimitInterceptor());
     }
 
@@ -41,6 +47,7 @@ public class XacMinhApplication implements ApplicationRunner, WebMvcConfigurer {
                 (ApplicationListener<ContextClosedEvent>) event -> LOGGER.info("Xac Minh Server da thoat!"));
         ConfigurableApplicationContext ctx = application.run(args);
         Runtime.getRuntime().addShutdownHook(new Thread(ctx::close));
+        Utils.checkLicense(ctx);
     }
 
 }

@@ -1,0 +1,76 @@
+me.lethinh.xacminhserver.RateLimitInterceptor -> a.a:
+    short NORMAL_PACKET_SIZE -> a
+    short MAX_TOKENS_PER_IP -> b
+    short SECONDS_TO_REFILL_CLIENT_TOKEN -> c
+    org.apache.logging.log4j.Logger LOGGER -> a
+    io.github.bucket4j.Bucket mainBucket -> a
+    com.google.common.cache.LoadingCache bucketPerIp -> a
+    void <init>() -> <init>
+    boolean preHandle(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse,java.lang.Object) -> preHandle
+    void <clinit>() -> <clinit>
+me.lethinh.xacminhserver.RateLimitInterceptor$1 -> a.b:
+    me.lethinh.xacminhserver.RateLimitInterceptor this$0 -> a
+    void <init>(me.lethinh.xacminhserver.RateLimitInterceptor) -> <init>
+    io.github.bucket4j.Bucket load$69032106() -> a
+    java.lang.Object load(java.lang.Object) -> load
+me.lethinh.xacminhserver.Utils -> a.c:
+    org.apache.logging.log4j.Logger LOGGER -> b
+    int BUFFER_SIZE -> a
+    void <init>() -> <init>
+    boolean checkLicense(org.springframework.context.ConfigurableApplicationContext) -> a
+    byte[] getUserID() -> a
+    byte[] execCmd(java.lang.String) -> a
+    byte[] hash(byte[]) -> a
+    java.sql.Connection connect() -> a
+    byte[] decompressGzip(byte[]) -> b
+    byte[] readIO(java.io.InputStream) -> a
+    void <clinit>() -> <clinit>
+me.lethinh.xacminhserver.VerifyController -> a.d:
+    org.apache.logging.log4j.Logger LOGGER -> c
+    java.lang.String OPTIFINE -> a
+    java.lang.String[] MINECRAFT_FILES -> a
+    void <init>() -> <init>
+    org.springframework.http.ResponseEntity verify(byte[]) -> a
+    void handleException() -> a
+    boolean verifyMinecraft(byte[]) -> a
+    void verifyFailed(java.lang.String) -> a
+    void verifyNotFound(java.lang.String) -> b
+    boolean isNotLoggedIn(java.lang.String) -> a
+    void updateVerifyStatus(java.lang.String,int) -> a
+    byte[] bytecodeFromVersion(java.lang.String) -> b
+    java.lang.String[] decrypt(byte[]) -> a
+    byte[] safeDecode(java.lang.String) -> c
+    java.lang.String parseVersionFileName(java.lang.String) -> a
+    void <clinit>() -> <clinit>
+me.lethinh.xacminhserver.VerifyController$1 -> a.e:
+    me.lethinh.xacminhserver.VerifyController this$0 -> a
+    void <init>(me.lethinh.xacminhserver.VerifyController,int,org.objectweb.asm.ClassVisitor) -> <init>
+    void changeClassName(java.lang.String) -> c
+me.lethinh.xacminhserver.VerifyVisitor -> a.f:
+    java.lang.String mcVersion -> b
+    boolean failed -> a
+    void <init>(int,org.objectweb.asm.ClassVisitor) -> <init>
+    void visit(int,int,java.lang.String,java.lang.String,java.lang.String,java.lang.String[]) -> visit
+    void changeClassName(java.lang.String) -> c
+me.lethinh.xacminhserver.XacMinhApplication -> a.g:
+    java.lang.String DATABASE_PATH -> c
+    org.apache.logging.log4j.Logger LOGGER -> d
+    void <init>() -> <init>
+    void run(org.springframework.boot.ApplicationArguments) -> run
+    void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry) -> addInterceptors
+    void main(java.lang.String[]) -> main
+    void lambda$main$0(org.springframework.context.event.ContextClosedEvent) -> a
+    void <clinit>() -> <clinit>
+me.lethinh.xacminhserver.licensekeylinux.MessageDigestWrapper -> a.h:
+    java.security.MessageDigest md -> a
+    void <init>(java.security.MessageDigest) -> <init>
+    me.lethinh.xacminhserver.licensekeylinux.MessageDigestWrapper getInstance$7539757d() -> a
+    void update(byte[]) -> a
+    byte[] digest() -> b
+me.lethinh.xacminhserver.licensekeylinux.StreamGobbler -> a.i:
+    java.io.InputStream is -> a
+    java.lang.String type -> d
+    java.io.OutputStream os -> a
+    void <init>(java.io.InputStream,java.lang.String) -> <init>
+    void <init>(java.io.InputStream,java.lang.String,java.io.OutputStream) -> <init>
+    void run() -> run

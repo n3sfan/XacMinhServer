@@ -8,6 +8,8 @@ plugins {
 
 group 'me.lethinh.xacminhserver'
 version '1.0'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -34,11 +36,24 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     implementation 'com.google.guava:guava:31.1-jre'
 
+
+
+    // Upgrade, no CVEs
+//    implementation("com.jayway.jsonpath:json-path:2.9.0")
+//    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.3")
+//    implementation "org.apache.tomcat.embed:tomcat-embed-core:11.0.0"
+//    implementation "org.apache.tomcat.embed:tomcat-embed-websocket:11.0.0"
+//    implementation 'org.springframework.boot:spring-boot-autoconfigure:2.7.18'
+//    implementation 'org.springframework.boot:spring-boot:2.7.18'
+//    implementation 'org.springframework:spring-core:6.1.3'
+//    implementation 'org.springframework.boot:spring-boot-jarmode-layertools:2.7.18'
+
     modules {
         module("org.springframework.boot:spring-boot-starter-logging") {
             replacedBy("org.springframework.boot:spring-boot-starter-log4j2")
         }
     }
+
 }
 
 bootJar {
@@ -65,27 +80,29 @@ jar {
 }
 
 def jarName = "$project.name-$project.version"
+def java8Path = "C:\\Program Files\\Eclipse Adoptium\\jdk-8.0.382.5-hotspot"
 
 task copyJar(type: Copy, dependsOn: 'obfuscate') {
 //    from "$buildDir/libs/$project.name/${jarName}.jar"
 //    into "/home/nesfan/Desktop/Server-1.12.2/plugins/"
 }
 
-task obfuscate {
+tasks.register('obfuscate') {
     doLast {
-        def obfDir = 'D:\\Workspace\\ProductionExport\\Obfuscator'
-        def ioDir = obfDir + "/in_out/$project.name"
+        def execDir = 'C:\\Users\\thinh\\Desktop\\Workspace\\ProductionExport'
+        def obfDir = "$projectDir/Obfuscation"
+        def ioDir = "$obfDir/in_out"
 
         delete {
-            delete "$obfDir/in_out/$project.name/lib"
-            delete "$obfDir/in_out/$project.name/BOOT-INF"
-            delete "$obfDir/in_out/$project.name/classes"
-            delete "$obfDir/in_out/$project.name/classes-obf"
-            delete "$ioDir/XacMinhServer"
+            delete "$ioDir/lib"
+            delete "$ioDir/BOOT-INF"
+            delete "$ioDir/classes"
+            delete "$ioDir/classes-obf"
+//            delete "$ioDir/XacMinhServer"
         }
         copy {
             from "$buildDir/libs/${jarName}.jar"
-            into "$obfDir/in_out/$project.name"
+            into "$ioDir"
         }
         exec {
             workingDir "$buildDir/libs"
@@ -99,11 +116,23 @@ task obfuscate {
             workingDir "$buildDir/libs"
             commandLine 'jar', 'xf', "${jarName}.jar", 'BOOT-INF/lib'
         }
-        ant.move file: "$buildDir/libs/BOOT-INF/classes", todir: "$obfDir/in_out/$project.name/"
-        ant.move file: "$buildDir/libs/BOOT-INF/lib", todir: "$obfDir/in_out/$project.name/"
         exec {
-            workingDir obfDir + '/proguard/bin'
-            commandLine 'cmd', '/c', 'proguard.bat', '@../../config/server-config'
+            workingDir "$buildDir/libs"
+            commandLine 'jar', 'xf', "${jarName}.jar", 'META-INF/MANIFEST.MF'
+        }
+        ant.move file: "$buildDir/libs/BOOT-INF/classes", todir: ioDir
+        ant.move file: "$buildDir/libs/BOOT-INF/lib", todir: ioDir
+        ant.move file: "$buildDir/libs/META-INF", todir: ioDir
+        exec {
+            workingDir obfDir
+            commandLine 'cmd', '/c', "$execDir/proguard-7.6.0/bin/proguard.bat", '@proguard.pro',
+                    "-injars", "$ioDir/classes",
+                    "-injars", "$ioDir/META-INF",
+                    "-outjars", "$ioDir/classes-obf",
+                    "-libraryjars", "$java8Path/jre/lib",
+                    "-libraryjars", "$ioDir/lib",
+                    "-libraryjars", "$buildDir/libs/libs",
+                    "-printmapping", "$obfDir/mapping"
         }
         // BEGIN EDIT
 //        exec {
@@ -122,22 +151,34 @@ task obfuscate {
         // END
         exec {
             workingDir obfDir
-            commandLine 'java', '-jar', 'Stringer/stringer.jar',
-                    '-configFile', 'config/server-stringer-config.xml',
-                    '-proguardMapFile', 'mapping/server_mapping',
-                    "in_out/$project.name/classes-obf", "in_out/$project.name/BOOT-INF/classes"
+            executable "$java8Path/bin/java"
+            args '-noverify', '-jar', "$execDir/Stringer9/stringer.jar",
+                    '-configFile', 'stringer-config.xml',
+                    '-proguardMapFile', 'mapping',
+                    "$ioDir/classes-obf", "$ioDir/BOOT-INF/classes"
         }
         exec {
-            executable 'C:/Program Files/7-Zip/7z.exe'
+            executable 'C:\\Program Files\\7-Zip\\7z.exe'
+            workingDir obfDir
             args 'd', '-r', "$ioDir/${jarName}.jar", "BOOT-INF/classes/me"
         }
         exec {
             workingDir ioDir
             commandLine 'jar', 'uf', "${jarName}.jar", 'BOOT-INF/'
         }
+
         copy {
-            from "$obfDir/in_out/$project.name/${jarName}.jar"
-            into "D:\\Workspace\\ProductionExport\\Export Result\\XacMinhServer"
+            from "$ioDir/classes-obf/MANIFEST.MF"
+            into "$ioDir/META-INF/"
         }
+        exec {
+            workingDir ioDir
+            executable 'C:\\Program Files\\7-Zip\\7z.exe'
+            args 'u', '-r', "${jarName}.jar", 'META-INF/'
+        }
+
+        ant.move file: "$ioDir/${jarName}.jar", todir: "$projectDir/Release"
     }
 }
+
+assemble.finalizedBy obfuscate
