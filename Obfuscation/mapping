@@ -18,11 +18,9 @@ me.lethinh.xacminhserver.Utils -> a.c:
     int BUFFER_SIZE -> a
     void <init>() -> <init>
     boolean checkLicense(org.springframework.context.ConfigurableApplicationContext) -> a
-    byte[] getUserID() -> a
-    byte[] execCmd(java.lang.String) -> a
-    byte[] hash(byte[]) -> a
+    byte[] getHWID() -> a
     java.sql.Connection connect() -> a
-    byte[] decompressGzip(byte[]) -> b
+    byte[] decompressGzip(byte[]) -> a
     byte[] readIO(java.io.InputStream) -> a
     void <clinit>() -> <clinit>
 me.lethinh.xacminhserver.VerifyController -> a.d:
@@ -34,12 +32,13 @@ me.lethinh.xacminhserver.VerifyController -> a.d:
     void handleException() -> a
     boolean verifyMinecraft(byte[]) -> a
     void verifyFailed(java.lang.String) -> a
+    void updateVerifyStatus(java.lang.String,int) -> a
+    void updateVerifyStatus(java.lang.String,int,boolean) -> a
     void verifyNotFound(java.lang.String) -> b
     boolean isNotLoggedIn(java.lang.String) -> a
-    void updateVerifyStatus(java.lang.String,int) -> a
-    byte[] bytecodeFromVersion(java.lang.String) -> b
+    byte[] bytecodeFromVersion(java.lang.String) -> a
     java.lang.String[] decrypt(byte[]) -> a
-    byte[] safeDecode(java.lang.String) -> c
+    byte[] safeDecode(java.lang.String) -> b
     java.lang.String parseVersionFileName(java.lang.String) -> a
     void <clinit>() -> <clinit>
 me.lethinh.xacminhserver.VerifyController$1 -> a.e:

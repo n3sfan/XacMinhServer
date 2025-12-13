@@ -80,7 +80,7 @@ jar {
 }
 
 def jarName = "$project.name-$project.version"
-def java8Path = "C:\\Program Files\\Eclipse Adoptium\\jdk-8.0.382.5-hotspot"
+def java8Path = "C:\\Program Files\\Eclipse Adoptium\\jdk-8.0.462.8-hotspot"
 
 task copyJar(type: Copy, dependsOn: 'obfuscate') {
 //    from "$buildDir/libs/$project.name/${jarName}.jar"
@@ -89,7 +89,7 @@ task copyJar(type: Copy, dependsOn: 'obfuscate') {
 
 tasks.register('obfuscate') {
     doLast {
-        def execDir = 'C:\\Users\\thinh\\Desktop\\Workspace\\ProductionExport'
+        def execDir = 'C:\\Users\\fynrae\\Desktop\\Project\\XacMinhClient\\Obfuscation'
         def obfDir = "$projectDir/Obfuscation"
         def ioDir = "$obfDir/in_out"
 

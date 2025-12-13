@@ -81,3 +81,130 @@
 [00:31:09] INFO  - XacMinh Server - By Nesfan
 [00:31:09] INFO  - XacMinh Server da duoc mo thanh cong!
 [00:31:09] INFO  - Xac Minh Server da thoat!
+[21:18:11] INFO  - XacMinh Server - By Nesfan
+[21:18:11] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:18:11] INFO  - Xac Minh Server da thoat!
+[21:19:21] INFO  - XacMinh Server - By Nesfan
+[21:19:21] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:19:21] INFO  - Xac Minh Server da thoat!
+[21:20:13] INFO  - XacMinh Server - By Nesfan
+[21:20:13] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:20:13] INFO  - Xac Minh Server da thoat!
+[21:21:27] INFO  - XacMinh Server - By Nesfan
+[21:21:27] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:21:27] INFO  - Xac Minh Server da thoat!
+[21:21:45] INFO  - XacMinh Server - By Nesfan
+[21:21:45] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:21:45] INFO  - Xac Minh Server da thoat!
+[20:10:40] INFO  - XacMinh Server - By Nesfan
+[20:10:41] INFO  - XacMinh Server da duoc mo thanh cong!
+[20:10:41] INFO  - Xac Minh Server da thoat!
+[20:11:35] INFO  - XacMinh Server - By Nesfan
+[20:11:35] INFO  - XacMinh Server da duoc mo thanh cong!
+[20:13:16] INFO  - Xu li xac minh player fynrae...
+[20:13:16] ERROR - org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (no such table: players)
+[20:13:16] WARN  - Player fynrae chua dang nhap vao server!
+[20:13:40] INFO  - Xu li xac minh player fynrae...
+[20:13:40] ERROR - org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (no such table: players)
+[20:13:40] WARN  - Player fynrae chua dang nhap vao server!
+[18:45:56] INFO  - XacMinh Server - By Nesfan
+[18:45:56] INFO  - XacMinh Server da duoc mo thanh cong!
+[18:48:45] INFO  - Xu li xac minh player NesFan...
+[18:48:46] ERROR - org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (no such table: players)
+[18:48:46] WARN  - Player NesFan chua dang nhap vao server!
+[18:53:41] INFO  - Xu li xac minh player test123123...
+[18:53:41] ERROR - org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (no such table: players)
+[18:53:41] WARN  - Player test123123 chua dang nhap vao server!
+[18:56:58] INFO  - Xu li xac minh player Tester...
+[18:56:58] ERROR - org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (no such table: players)
+[18:56:58] WARN  - Player Tester chua dang nhap vao server!
+[18:59:50] INFO  - Xu li xac minh player Tester...
+[18:59:50] INFO  - Player Tester xac minh thanh cong! (1.12.2)
+[19:02:55] INFO  - Xu li xac minh player Tester...
+[19:02:55] INFO  - Player Tester xac minh thanh cong! (1.12.2)
+[19:03:33] INFO  - Xu li xac minh player Tester...
+[19:03:33] WARN  - Player Tester chua dang nhap vao server!
+[19:07:15] INFO  - Xu li xac minh player test2...
+[19:07:15] WARN  - Player test2 su dung hack!
+[19:33:24] INFO  - Xu li xac minh player test2...
+[19:33:24] WARN  - Player test2 su dung hack!
+[19:36:30] INFO  - Xu li xac minh player test2...
+[19:36:30] INFO  - Player test2 xac minh thanh cong! (1.12.2)
+[20:04:13] INFO  - XacMinh Server - By Nesfan
+[20:04:13] INFO  - XacMinh Server da duoc mo thanh cong!
+[20:05:41] INFO  - Xu li xac minh player fynrae...
+[20:05:41] INFO  - Player fynrae xac minh thanh cong! (1.12.2)
+[20:06:00] INFO  - Xu li xac minh player fynrae...
+[20:06:00] WARN  - Player fynrae chua dang nhap vao server!
+[20:19:22] INFO  - Xac Minh Server da thoat!
+[20:20:05] INFO  - XacMinh Server - By Nesfan
+[20:20:05] INFO  - XacMinh Server da duoc mo thanh cong!
+[20:20:39] INFO  - Xu li xac minh player test2...
+[20:20:40] INFO  - Player test2 xac minh thanh cong! (1.12.2)
+[20:21:04] INFO  - Xu li xac minh player test2...
+[20:21:04] WARN  - Player test2 su dung hack!
+[20:28:19] INFO  - Xu li xac minh player fynrae...
+[20:28:19] INFO  - Player fynrae xac minh thanh cong! (1.12.2)
+[20:28:59] INFO  - Xu li xac minh player fynrae...
+[20:28:59] WARN  - Player fynrae su dung hack!
+[20:31:49] INFO  - Xu li xac minh player fynrae...
+[20:31:49] INFO  - Player fynrae xac minh thanh cong! (1.12.2)
+[20:37:33] INFO  - Xu li xac minh player fynrae...
+[20:37:33] INFO  - Player fynrae xac minh thanh cong! (1.12.2)
+[20:37:53] INFO  - Xu li xac minh player fynrae...
+[20:37:53] WARN  - Player fynrae su dung hack!
+[17:46:32] INFO  - XacMinh Server - By Nesfan
+[17:46:32] INFO  - XacMinh Server da duoc mo thanh cong!
+[17:46:52] INFO  - Xu li xac minh player fynrae...
+[17:46:52] WARN  - Player fynrae su dung hack!
+[17:47:34] INFO  - Xu li xac minh player fynrae...
+[17:47:34] WARN  - Player fynrae su dung hack!
+[17:49:10] INFO  - Xu li xac minh player fynrae...
+[17:49:10] INFO  - Player fynrae xac minh thanh cong! (1.12.2)
+[17:53:46] INFO  - Xu li xac minh player fynrae...
+[17:53:46] WARN  - Player fynrae su dung hack!
+[17:56:46] INFO  - XacMinh Server - By Nesfan
+[17:56:46] INFO  - XacMinh Server da duoc mo thanh cong!
+[17:59:32] INFO  - Xu li xac minh player fynrae...
+[17:59:32] WARN  - Player fynrae su dung hack!
+[18:02:29] INFO  - Xu li xac minh player fynrae...
+[18:02:29] INFO  - Player fynrae xac minh thanh cong! (1.12.2)
+[18:02:50] INFO  - Xu li xac minh player fynrae...
+[18:02:50] WARN  - Player fynrae su dung hack!
+[18:05:20] INFO  - Xu li xac minh player fynrae...
+[18:05:20] WARN  - Player fynrae su dung hack!
+[18:09:50] INFO  - Xu li xac minh player fynrae...
+[18:09:50] WARN  - Player fynrae su dung hack!
+[18:15:55] INFO  - Xu li xac minh player fynrae...
+[18:15:55] WARN  - Player fynrae su dung hack!
+[18:18:48] INFO  - Xu li xac minh player fynrae...
+[18:18:48] WARN  - Player fynrae su dung hack!
+[20:06:40] INFO  - XacMinh Server - By Nesfan
+[20:06:40] INFO  - XacMinh Server da duoc mo thanh cong!
+[20:06:40] INFO  - Xac Minh Server da thoat!
+[06:02:18] INFO  - XacMinh Server - By Nesfan (v2)
+[06:02:18] INFO  - XacMinh Server da duoc mo thanh cong!
+[06:07:03] INFO  - XacMinh Server - By Nesfan (v2)
+[06:07:03] INFO  - XacMinh Server da duoc mo thanh cong!
+[06:11:17] INFO  - XacMinh Server - By Nesfan (v2)
+[06:11:17] INFO  - XacMinh Server da duoc mo thanh cong!
+[06:11:18] INFO  - Xac Minh Server da thoat!
+[06:30:29] INFO  - XacMinh Server - By Nesfan
+[06:30:29] INFO  - XacMinh Server da duoc mo thanh cong!
+[06:30:30] INFO  - Xac Minh Server da thoat!
+[20:27:52] INFO  - XacMinh Server - By Nesfan
+[20:27:52] INFO  - XacMinh Server da duoc mo thanh cong!
+[20:27:53] INFO  - Xac Minh Server da thoat!
+[20:35:23] INFO  - XacMinh Server - By Nesfan
+[20:35:23] INFO  - XacMinh Server da duoc mo thanh cong!
+[20:35:24] INFO  - Xac Minh Server da thoat!
+[21:08:39] INFO  - XacMinh Server - By Nesfan
+[21:08:39] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:08:54] INFO  - Xac Minh Server da thoat!
+[21:19:23] INFO  - XacMinh Server - By Nesfan
+[21:19:23] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:20:24] INFO  - XacMinh Server - By Nesfan
+[21:20:24] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:29:48] INFO  - XacMinh Server - By Nesfan
+[21:29:48] INFO  - XacMinh Server da duoc mo thanh cong!
+[21:29:48] INFO  - Xac Minh Server da thoat!

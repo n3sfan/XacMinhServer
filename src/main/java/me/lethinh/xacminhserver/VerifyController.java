@@ -15,9 +15,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -36,7 +33,6 @@ public class VerifyController {
     private static final String OPTIFINE = "OptiFine";
     private static final String[] MINECRAFT_FILES = {"1_13.bin", "1_13_1.bin", "1_13_2.bin", "1_14.bin", "1_14_1.bin", "1_14_2.bin", "1_14_4.bin", "1_15.bin", "1_15_1.bin", "1_15_2.bin", "1_16.bin", "1_16_1.bin", "1_16_2.bin", "1_16_3.bin", "1_16_4.bin", "1_16_5.bin", "a.bin", "ao.bin", "b.bin", "bo.bin", "c.bin", "co.bin", "d.bin", "do.bin", "e.bin", "eo.bin", "OptiFine 1_13_1.bin", "OptiFine 1_13_2.bin", "OptiFine 1_14_2.bin", "OptiFine 1_14_3.bin", "OptiFine 1_14_4.bin", "OptiFine 1_15_2.bin", "OptiFine 1_16_1.bin", "OptiFine 1_16_2.bin", "OptiFine 1_16_3.bin", "OptiFine 1_16_4.bin", "OptiFine 1_16_5.bin"};
 
-    // TODO OPTIMIZE COMPARING LARGE BYTE ARRAYs
     @PostMapping(value = "/xacminh", headers = {"content-type=text/*"})
     public ResponseEntity<Void> verify(@RequestBody byte[] requestContent) {
         String[] content = decrypt(Base64.getDecoder().decode(Utils.decompressGzip(requestContent)));
@@ -49,7 +45,6 @@ public class VerifyController {
 
         LOGGER.info("Xu li xac minh player " + username + "...");
 
-        // hack confirmed
         if (content.length != 3) {
             if (username != null && username.length() <= 16) {
                 LOGGER.warn("Bad request");
@@ -67,10 +62,7 @@ public class VerifyController {
         // read class from bytecode sent to server
         byte[] classFile = safeDecode(content[1]);
 
-        // invalid class file, hack?
-        // TODO CLASS FILE LENGTH > 5000
         if (classFile == null || new String(classFile).equals("false") || classFile.length > 14000) {
-            //LOGGER.info("direct");
             verifyFailed(username);
             return ResponseEntity.badRequest().build();
         }
@@ -83,7 +75,6 @@ public class VerifyController {
 
                 if (split.length < 3) {
                     failed = true;
-                    //LOGGER.info(className);
                     return;
                 }
 
@@ -93,19 +84,13 @@ public class VerifyController {
 
                 // if version is not vanilla
                 if (version.isEmpty() || !version.matches("\\d_\\d+_\\d|\\d_\\d+")) {
-                    //LOGGER.info(mcVersion.replace('_', '.'));
-
-                    // since OptiFine has a lot of updates, only get the vanilla version part
                     if (version.contains(OPTIFINE)) {
                         if (version.contains(" ")) { // TLauncher
-                            // Only tested for <= 1.12.2
                             if (Character.digit(version.split(" ")[1].charAt(3), 10) <= 2) {
                                 this.mcVersion = version.split(" ")[1];
                             }
                         } else {
                             this.mcVersion = version.substring(0, version.indexOf(OPTIFINE) - 1);
-
-                            // 1.13.1-OptiFine... -> use TLauncher Optifine to check
                             if (Character.digit(mcVersion.charAt(3), 10) >= 3) {
                                 this.mcVersion = OPTIFINE + ' ' + this.mcVersion;
                             }
@@ -128,21 +113,13 @@ public class VerifyController {
             return ResponseEntity.badRequest().build();
         }
 
-        /*try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream("D:\\Workspace\\XacMinhServer\\src\\main\\resources\\a\\test.class"))) {
-            out.write(writer.toByteArray());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
-        //LOGGER.info("test " + mcVersion);
-
-        //boolean verified = Arrays.equals(writer.toByteArray(), bytecodeFromVersion(mcVersion));
         boolean verified = verifyMinecraft(writer.toByteArray());
-        updateVerifyStatus(username, verified ? 1 : 2);
 
         if (verified) {
+            updateVerifyStatus(username, 1);
             LOGGER.info("Player " + username + " xac minh thanh cong! (" + mcVersion.replace('_', '.') + ')');
         } else {
+            verifyFailed(username);
             LOGGER.warn("Player " + username + " su dung hack! (" + mcVersion.replace('_', '.') + ')');
             return ResponseEntity.badRequest().build();
         }
@@ -162,13 +139,40 @@ public class VerifyController {
                 return true;
             }
         }
-
         return false;
     }
 
     private void verifyFailed(String username) {
-        updateVerifyStatus(username, 2);
+        updateVerifyStatus(username, 2, true);
         LOGGER.warn("Player " + username + " su dung hack!");
+    }
+
+    private void updateVerifyStatus(String username, int verified) {
+        updateVerifyStatus(username, verified, false);
+    }
+
+    private void updateVerifyStatus(String username, int verified, boolean forceActive) {
+        String sql;
+        if (forceActive) {
+            sql = "UPDATE players SET verified = ?, deleted = 0 WHERE name = ?";
+        } else {
+            sql = "UPDATE players SET verified = ? WHERE name = ? AND deleted = ?";
+        }
+
+        try (Connection conn = Utils.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, verified);
+            stmt.setString(2, username);
+
+            if (!forceActive) {
+                stmt.setInt(3, 0);
+            }
+
+            stmt.executeUpdate();
+        } catch (SQLException throwables) {
+            LOGGER.error(throwables);
+        }
     }
 
     private void verifyNotFound(String username) {
@@ -181,9 +185,8 @@ public class VerifyController {
         }
 
         try (Connection conn = Utils.connect();
-             PreparedStatement stmt = conn.prepareStatement("SELECT rowid FROM players WHERE name = ? AND deleted = ?")) {
+             PreparedStatement stmt = conn.prepareStatement("SELECT rowid FROM players WHERE name = ?")) {
             stmt.setString(1, username);
-            stmt.setInt(2, 0);
 
             try (ResultSet result = stmt.executeQuery()) {
                 return !result.next();
@@ -193,18 +196,6 @@ public class VerifyController {
         }
 
         return true;
-    }
-
-    private void updateVerifyStatus(String username, int verified) {
-        try (Connection conn = Utils.connect();
-             PreparedStatement stmt = conn.prepareStatement("UPDATE players SET verified = ? WHERE name = ? AND deleted = ?")) {
-            stmt.setInt(1, verified);
-            stmt.setString(2, username);
-            stmt.setInt(3, 0);
-            stmt.executeUpdate();
-        } catch (SQLException throwables) {
-            LOGGER.error(throwables);
-        }
     }
 
     private byte[] bytecodeFromVersion(String version) {
@@ -235,10 +226,6 @@ public class VerifyController {
         }
     }
 
-    /*  a = 1.10.2
-        b = 1.11, c = 1.11.2
-        d = 1.12, e = 1.12.2
-     */
     private String parseVersionFileName(String mcVersion) {
         switch (mcVersion) {
             case "1_10_2":
@@ -270,5 +257,4 @@ public class VerifyController {
                 return mcVersion;
         }
     }
-
 }

@@ -1,21 +1,25 @@
 package me.lethinh.xacminhserver;
 
+import com.jacob.activeX.ActiveXComponent;
+import com.jacob.com.ComThread;
+import com.jacob.com.EnumVariant;
+import com.jacob.com.Variant;
 import me.lethinh.xacminhserver.licensekeylinux.MessageDigestWrapper;
-import me.lethinh.xacminhserver.licensekeylinux.StreamGobbler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.zip.GZIPInputStream;
 
 public class Utils {
@@ -26,109 +30,72 @@ public class Utils {
     /* LIcense Key */
 
     public static boolean checkLicense(ConfigurableApplicationContext ctx) {
-        byte[] hwid = new byte[0];
         try {
-            hwid = getUserID();
+            byte[] hwidBytes = getHWID();
+            String localKey = java.util.Base64.getEncoder().encodeToString(hwidBytes);
 
-            HttpURLConnection conn = null;
-            byte[] buf = new byte[16];
+            URL url = new URL("https://raw.githubusercontent.com/fynrae/license_xm/main/index.html"); // new license key link
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            conn.setUseCaches(false);
 
-            try {
-                conn = (HttpURLConnection) new URL("https://n3sfan.github.io/license_xm.html").openConnection();
-                conn.setRequestMethod("GET");
-                conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000);
-                conn.setUseCaches(false);
-                conn.setDoOutput(false);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String serverKey = line.trim();
 
-                try (DataInputStream dis = new DataInputStream(conn.getInputStream())) {
-                    int l;
-                    while ((l = dis.read(buf, 0, 16)) != -1) {
-                        if (l < 16)
-                            break;
+                    if (serverKey.isEmpty() || serverKey.startsWith("#")) {
+                        continue;
+                    }
 
-                        if (Arrays.equals(hwid, buf)) {
-                            return true;
-                        }
+                    if (serverKey.equals(localKey)) {
+                        return true;
                     }
                 }
-            } catch (SocketTimeoutException e) {
-                throw new IllegalArgumentException("Kiem tra cap nhat mat qua nhieu thoi gian, vui long thu lai.");
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Ko the kiem tra cap nhat phien ban!");
-            } finally {
-                if (conn != null) conn.disconnect();
             }
-//            System.exit(0;
+        } catch (Exception e) {
+            System.out.println("License check error");
+        }
 
+        if (ctx != null) {
+            System.out.println("License Invalid or Not Found on Server.");
+            ctx.close();
         }
-        catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Unexpected");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.out.println("Waited too long");
-        }
-        catch (IllegalStateException e) {
-            e.printStackTrace();
-        }
-//        if (Arrays.equals(Base64.getDecoder().decode("YGi1lZ6wEdtoX+vz9K/5sw=="), hwid)) {
-//            return true;
-//        }
-        ctx.close();
         return false;
     }
 
-    public static byte[] getUserID() throws IOException, InterruptedException {
-        byte[] res = execCmd("lsblk -dno name,serial");
-        // App Must runs as sudo
-        byte[] res2 = execCmd("dmidecode -t baseboard");
-        byte[] input = Arrays.copyOf(res, res.length + res2.length);
-        System.arraycopy(res2, 0, input, res.length, res2.length);
+    public static byte[] getHWID() {
+        StringBuilder hwid = new StringBuilder();
 
-        input = hash(input);
-        return input;
-    }
+        ComThread.InitMTA();
+        try {
+            ActiveXComponent wmi = new ActiveXComponent("winmgmts:\\\\.");
 
-    public static byte[] execCmd(String cmd) throws InterruptedException, IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteArrayOutputStream error = new ByteArrayOutputStream();
-        Runtime rt = Runtime.getRuntime();
-        Process proc = rt.exec(cmd);
-        // any error message?
-        StreamGobbler errorGobbler = new
-                StreamGobbler(proc.getErrorStream(), "ERROR", error);
+            Variant instances = wmi.invoke("InstancesOf", "Win32_BaseBoard");
+            Enumeration<Variant> en = new EnumVariant(instances.getDispatch());
+            while (en.hasMoreElements()) {
+                ActiveXComponent bb = new ActiveXComponent(en.nextElement().getDispatch());
+                hwid.append(bb.getPropertyAsString("SerialNumber"));
+            }
 
-        // any output?
-        StreamGobbler outputGobbler = new
-                StreamGobbler(proc.getInputStream(), "OUTPUT", baos);
+            en = new EnumVariant(wmi.invoke("InstancesOf", "Win32_DiskDrive").getDispatch());
+            while (en.hasMoreElements()) {
+                ActiveXComponent dd = new ActiveXComponent(en.nextElement().getDispatch());
+                hwid.append(dd.getPropertyAsString("Model")).append(dd.getPropertyAsString("SerialNumber"));
+            }
 
-        // kick them off
-        errorGobbler.start();
-        outputGobbler.start();
-
-        // any error???
-        int exitVal = proc.waitFor();
-        while (outputGobbler.isAlive() || errorGobbler.isAlive()) {
-            // wait
+        } catch (Exception e) {
+            LOGGER.error("Error generating HWID via JACOB: " + e.getMessage());
+            throw new RuntimeException(e);
+        } finally {
+            ComThread.Release();
         }
 
-        // TODO DEBUG
-//        System.out.println(error.toString());
-//        System.out.println(baos.toString());
-
-        if (exitVal != 0) {
-            throw new IllegalStateException("Waited exit error");
-        }
-        return baos.toByteArray();
-    }
-
-    public static byte[] hash(byte[] hwid) {
         try {
             MessageDigestWrapper md = MessageDigestWrapper.getInstance("SHA-256");
-            md.update(hwid);
-            byte[] encrypted = md.digest();
-            return encrypted;
+            md.update(hwid.toString().getBytes(StandardCharsets.UTF_8));
+            return md.digest();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -184,5 +151,4 @@ public class Utils {
             }
         }
     }
-
 }

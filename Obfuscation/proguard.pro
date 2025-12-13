@@ -14,6 +14,10 @@
 -adaptresourcefilecontents **.properties,MANIFEST.MF
 -verbose
 
+-dontwarn com.jacob.**
+-dontwarn com.jacob.activeX.**
+-dontwarn com.jacob.com.**
+
 #-keepclassmembers class com.jacob.** {
 #   <fields>;
 #}
