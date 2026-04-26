@@ -23,20 +23,26 @@ public class XacMinhApplication implements ApplicationRunner, WebMvcConfigurer {
     public static String DATABASE_PATH;
     private static final Logger LOGGER = LogManager.getLogger("XacMinh");
 
-
     /* ApplicationRunner */
     @Override
     public void run(ApplicationArguments args) {
-//        Utils.checkLicense();
+        // Utils.checkLicense();
         LOGGER.info("XacMinh Server - By Nesfan");
         LOGGER.info("XacMinh Server da duoc mo thanh cong!");
-        DATABASE_PATH = Paths.get(args.getOptionValues("serverPath").get(0), "plugins/XacMinh/xacminh.db").toString();
+
+        String serverPath = args.getOptionValues("serverPath").get(0);
+        DATABASE_PATH = Paths.get(serverPath, "plugins", "XacMinh", "xacminh.db").toString();
+
+        java.io.File dbDir = new java.io.File(DATABASE_PATH).getParentFile();
+        if (!dbDir.exists()) {
+            dbDir.mkdirs();
+        }
     }
 
     /* WebMvcConfigurer */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-//        Utils.checkLicense();
+        // Utils.checkLicense();
         registry.addInterceptor(new RateLimitInterceptor());
     }
 

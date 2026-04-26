@@ -32,8 +32,8 @@ dependencies {
     }
     implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.0'
     implementation 'com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0'
-    compileOnly 'org.projectlombok:lombok:1.18.24'
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'com.google.guava:guava:31.1-jre'
 
 
@@ -80,7 +80,7 @@ jar {
 }
 
 def jarName = "$project.name-$project.version"
-def java8Path = "C:\\Program Files\\Eclipse Adoptium\\jdk-8.0.462.8-hotspot"
+def java8Path = "C:\\Program Files\\Eclipse Adoptium\\jdk-8.0.472.8-hotspot"
 
 task copyJar(type: Copy, dependsOn: 'obfuscate') {
 //    from "$buildDir/libs/$project.name/${jarName}.jar"
@@ -89,7 +89,7 @@ task copyJar(type: Copy, dependsOn: 'obfuscate') {
 
 tasks.register('obfuscate') {
     doLast {
-        def execDir = 'C:\\Users\\fynrae\\Desktop\\Project\\XacMinhClient\\Obfuscation'
+        def execDir = 'C:\\Users\\fynrae\\Desktop\\Workspace\\Minecraft Plugin\\XacMinhClient\\Obfuscation'
         def obfDir = "$projectDir/Obfuscation"
         def ioDir = "$obfDir/in_out"
 
@@ -125,11 +125,13 @@ tasks.register('obfuscate') {
         ant.move file: "$buildDir/libs/META-INF", todir: ioDir
         exec {
             workingDir obfDir
-            commandLine 'cmd', '/c', "$execDir/proguard-7.6.0/bin/proguard.bat", '@proguard.pro',
+            executable "$java8Path/bin/java"
+            args "-jar", "$execDir/proguard-7.6.0/lib/proguard.jar", "@proguard.pro",
                     "-injars", "$ioDir/classes",
                     "-injars", "$ioDir/META-INF",
                     "-outjars", "$ioDir/classes-obf",
-                    "-libraryjars", "$java8Path/jre/lib",
+                    "-libraryjars", "$java8Path/jre/lib/rt.jar", // Point directly to rt.jar
+                    "-libraryjars", "$java8Path/jre/lib/jce.jar",
                     "-libraryjars", "$ioDir/lib",
                     "-libraryjars", "$buildDir/libs/libs",
                     "-printmapping", "$obfDir/mapping"

@@ -54,13 +54,19 @@ public class Utils {
                     }
                 }
             }
-        } catch (Exception e) {
-            System.out.println("License check error");
+        } catch (UnsatisfiedLinkError e) {
+            LOGGER.fatal("The required 'jacob-1.20-x64.dll' is missing from your system path!");
+            System.exit(1);
+        }  catch (Exception e) {
+            System.out.println("Unexpected");
+            System.exit(1);
         }
+
 
         if (ctx != null) {
             System.out.println("License Invalid or Not Found on Server.");
             ctx.close();
+            System.exit(1);
         }
         return false;
     }

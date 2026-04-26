@@ -27,7 +27,11 @@ me.lethinh.xacminhserver.VerifyController -> a.d:
     org.apache.logging.log4j.Logger LOGGER -> c
     java.lang.String OPTIFINE -> a
     java.lang.String[] MINECRAFT_FILES -> a
+    long lastVersionCheckTime -> a
+    long CACHE_DURATION -> b
+    java.lang.String cachedLatestVersion -> b
     void <init>() -> <init>
+    java.lang.String getExpectedVersion() -> a
     org.springframework.http.ResponseEntity verify(byte[]) -> a
     void handleException() -> a
     boolean verifyMinecraft(byte[]) -> a
@@ -35,7 +39,7 @@ me.lethinh.xacminhserver.VerifyController -> a.d:
     void updateVerifyStatus(java.lang.String,int) -> a
     void updateVerifyStatus(java.lang.String,int,boolean) -> a
     void verifyNotFound(java.lang.String) -> b
-    boolean isNotLoggedIn(java.lang.String) -> a
+    boolean isValidSession(java.lang.String,java.lang.String) -> a
     byte[] bytecodeFromVersion(java.lang.String) -> a
     java.lang.String[] decrypt(byte[]) -> a
     byte[] safeDecode(java.lang.String) -> b
@@ -46,13 +50,13 @@ me.lethinh.xacminhserver.VerifyController$1 -> a.e:
     void <init>(me.lethinh.xacminhserver.VerifyController,int,org.objectweb.asm.ClassVisitor) -> <init>
     void changeClassName(java.lang.String) -> c
 me.lethinh.xacminhserver.VerifyVisitor -> a.f:
-    java.lang.String mcVersion -> b
+    java.lang.String mcVersion -> c
     boolean failed -> a
     void <init>(int,org.objectweb.asm.ClassVisitor) -> <init>
     void visit(int,int,java.lang.String,java.lang.String,java.lang.String,java.lang.String[]) -> visit
     void changeClassName(java.lang.String) -> c
 me.lethinh.xacminhserver.XacMinhApplication -> a.g:
-    java.lang.String DATABASE_PATH -> c
+    java.lang.String DATABASE_PATH -> d
     org.apache.logging.log4j.Logger LOGGER -> d
     void <init>() -> <init>
     void run(org.springframework.boot.ApplicationArguments) -> run
@@ -68,7 +72,7 @@ me.lethinh.xacminhserver.licensekeylinux.MessageDigestWrapper -> a.h:
     byte[] digest() -> b
 me.lethinh.xacminhserver.licensekeylinux.StreamGobbler -> a.i:
     java.io.InputStream is -> a
-    java.lang.String type -> d
+    java.lang.String type -> e
     java.io.OutputStream os -> a
     void <init>(java.io.InputStream,java.lang.String) -> <init>
     void <init>(java.io.InputStream,java.lang.String,java.io.OutputStream) -> <init>

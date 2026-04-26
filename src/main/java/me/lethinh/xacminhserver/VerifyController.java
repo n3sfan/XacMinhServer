@@ -16,6 +16,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -32,6 +34,34 @@ public class VerifyController {
     private static final Logger LOGGER = LogManager.getLogger("XacMinh");
     private static final String OPTIFINE = "OptiFine";
     private static final String[] MINECRAFT_FILES = {"1_13.bin", "1_13_1.bin", "1_13_2.bin", "1_14.bin", "1_14_1.bin", "1_14_2.bin", "1_14_4.bin", "1_15.bin", "1_15_1.bin", "1_15_2.bin", "1_16.bin", "1_16_1.bin", "1_16_2.bin", "1_16_3.bin", "1_16_4.bin", "1_16_5.bin", "a.bin", "ao.bin", "b.bin", "bo.bin", "c.bin", "co.bin", "d.bin", "do.bin", "e.bin", "eo.bin", "OptiFine 1_13_1.bin", "OptiFine 1_13_2.bin", "OptiFine 1_14_2.bin", "OptiFine 1_14_3.bin", "OptiFine 1_14_4.bin", "OptiFine 1_15_2.bin", "OptiFine 1_16_1.bin", "OptiFine 1_16_2.bin", "OptiFine 1_16_3.bin", "OptiFine 1_16_4.bin", "OptiFine 1_16_5.bin"};
+    private long lastVersionCheckTime = 0;
+    private static final long CACHE_DURATION = 5 * 60 * 1000;
+    private String cachedLatestVersion = "1.06";
+
+    private String getExpectedVersion() {
+        long now = System.currentTimeMillis();
+        if (now - lastVersionCheckTime > CACHE_DURATION) {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL("https://raw.githubusercontent.com/fynrae/license_xm/main/version.html");
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream()))) {
+                    String ver = reader.readLine();
+                    if (ver != null && !ver.isEmpty()) {
+                        cachedLatestVersion = ver.trim();
+                        lastVersionCheckTime = now;
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("Failed to fetch version from GitHub: " + e.getMessage());
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        }
+        return cachedLatestVersion;
+    }
 
     @PostMapping(value = "/xacminh", headers = {"content-type=text/*"})
     public ResponseEntity<Void> verify(@RequestBody byte[] requestContent) {
@@ -45,16 +75,24 @@ public class VerifyController {
 
         LOGGER.info("Xu li xac minh player " + username + "...");
 
-        if (content.length != 3) {
-            if (username != null && username.length() <= 16) {
-                LOGGER.warn("Bad request");
-            } else {
-                LOGGER.warn("Bad username: " + username);
-            }
+        if (content.length < 4) {
+            LOGGER.warn("Player " + username + " su dung ban xac minh cu!");
             verifyFailed(username);
             return ResponseEntity.badRequest().build();
         }
-        if (isNotLoggedIn(username)) {
+
+        String clientVersion = content[3].trim();
+        String expectedVersion = getExpectedVersion();
+
+        if (!clientVersion.equals(expectedVersion)) {
+            LOGGER.warn("Player " + username + " su dung ban xac minh cu!");
+            verifyFailed(username);
+            return ResponseEntity.badRequest().build();
+        }
+
+        String sessionToken = content.length > 4 ? content[4] : null;
+
+        if (!isValidSession(username, sessionToken)) {
             verifyNotFound(username);
             return ResponseEntity.notFound().build();
         }
@@ -179,23 +217,55 @@ public class VerifyController {
         LOGGER.warn("Player " + username + " chua dang nhap vao server!");
     }
 
-    private boolean isNotLoggedIn(String username) {
-        if (username == null || username.isEmpty()) {
-            return true;
+    private boolean isValidSession(String username, String sessionTokenStr) {
+        if (username == null || username.isEmpty() || sessionTokenStr == null || sessionTokenStr.isEmpty()) {
+            return false;
         }
 
-        try (Connection conn = Utils.connect();
-             PreparedStatement stmt = conn.prepareStatement("SELECT rowid FROM players WHERE name = ?")) {
-            stmt.setString(1, username);
+        String[] parts = sessionTokenStr.split("\\|");
+        if (parts.length != 2) return false;
+        String token = parts[0];
+        String hmac = parts[1];
 
-            try (ResultSet result = stmt.executeQuery()) {
-                return !result.next();
+        // verify hmac
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            javax.crypto.spec.SecretKeySpec hmacKeySpec = new javax.crypto.spec.SecretKeySpec(java.util.Base64.getDecoder().decode("Xk9pLm4VqA2wF6zT8yH1uA=="), "HmacSHA256");
+            mac.init(hmacKeySpec);
+            byte[] hmacBytes = mac.doFinal((token + username).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            String calculatedHmac = java.util.Base64.getEncoder().encodeToString(hmacBytes);
+            if (!java.security.MessageDigest.isEqual(hmac.getBytes(), calculatedHmac.getBytes())) {
+                return false;
             }
-        } catch (SQLException throwables) {
+        } catch (Exception e) {
+            return false;
+        }
+
+        try (java.sql.Connection conn = Utils.connect();
+             java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT token_issued_at FROM players WHERE name = ? AND session_token = ? AND deleted = 0")) {
+            stmt.setString(1, username);
+            stmt.setString(2, token);
+
+            try (java.sql.ResultSet result = stmt.executeQuery()) {
+                if (result.next()) {
+                    long issuedAt = result.getLong(1);
+                    if (System.currentTimeMillis() - issuedAt > 90000 && issuedAt != 0) { // 90 seconds TTL
+                        return false; 
+                    }
+                    // Valid! Now burn the token.
+                    try (java.sql.PreparedStatement updateStmt = conn.prepareStatement("UPDATE players SET session_token = NULL WHERE name = ? AND session_token = ?")) {
+                        updateStmt.setString(1, username);
+                        updateStmt.setString(2, token);
+                        updateStmt.executeUpdate();
+                    }
+                    return true;
+                }
+            }
+        } catch (java.sql.SQLException throwables) {
             LOGGER.error(throwables);
         }
 
-        return true;
+        return false;
     }
 
     private byte[] bytecodeFromVersion(String version) {

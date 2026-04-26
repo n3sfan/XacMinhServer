@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 Protected-Notice: AV contact email - primary@licelus.com
-JAR-Signature: foRfBwXGOMFaWb8HJe5Egbb/N4uSfio6NdRJyN0RIFKZ/N9V
+JAR-Signature: Ok/APEENp/oekiA8YSXbuvI0qLDSNE1ynGIzq/YyPbfFSGTZ
 Protected-By: 9.1.15 Stringer (20190521)
 
