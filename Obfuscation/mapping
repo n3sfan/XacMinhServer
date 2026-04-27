@@ -39,6 +39,8 @@ me.lethinh.xacminhserver.VerifyController -> a.d:
     void updateVerifyStatus(java.lang.String,int) -> a
     void updateVerifyStatus(java.lang.String,int,boolean) -> a
     void verifyNotFound(java.lang.String) -> b
+    boolean isExplicitFailurePayload(byte[]) -> b
+    boolean hasKnownPlayer(java.lang.String) -> a
     boolean isValidSession(java.lang.String,java.lang.String) -> a
     byte[] bytecodeFromVersion(java.lang.String) -> a
     java.lang.String[] decrypt(byte[]) -> a

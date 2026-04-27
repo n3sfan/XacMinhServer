@@ -98,16 +98,25 @@ public class VerifyController {
         }
 
         String sessionToken = content.length > 4 ? content[4] : null;
+        byte[] classFile = safeDecode(content[1]);
+        boolean explicitFailure = isExplicitFailurePayload(classFile);
 
         if (!isValidSession(username, sessionToken)) {
+            if (explicitFailure && hasKnownPlayer(username)) {
+                verifyFailed(username);
+                return ResponseEntity.badRequest().build();
+            }
             verifyNotFound(username);
             return ResponseEntity.notFound().build();
         }
 
-        // read class from bytecode sent to server
-        byte[] classFile = safeDecode(content[1]);
+        if (explicitFailure) {
+            verifyFailed(username);
+            return ResponseEntity.badRequest().build();
+        }
 
-        if (classFile == null || new String(classFile).equals("false") || classFile.length > 14000) {
+        // read class from bytecode sent to server
+        if (classFile == null || classFile.length > 14000) {
             verifyFailed(username);
             return ResponseEntity.badRequest().build();
         }
@@ -222,6 +231,29 @@ public class VerifyController {
 
     private void verifyNotFound(String username) {
         LOGGER.warn("Player " + username + " chua dang nhap vao server!");
+    }
+
+    private boolean isExplicitFailurePayload(byte[] classFile) {
+        return classFile != null && Arrays.equals(classFile, "false".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    private boolean hasKnownPlayer(String username) {
+        if (username == null || username.isEmpty()) {
+            return false;
+        }
+
+        try (Connection conn = Utils.connect();
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT 1 FROM players WHERE name = ? ORDER BY rowid DESC LIMIT 1")) {
+            stmt.setString(1, username);
+
+            try (ResultSet result = stmt.executeQuery()) {
+                return result.next();
+            }
+        } catch (SQLException throwables) {
+            LOGGER.error(throwables);
+            return false;
+        }
     }
 
     private boolean isValidSession(String username, String sessionTokenStr) {
