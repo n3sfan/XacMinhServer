@@ -33,10 +33,15 @@ public class VerifyController {
 
     private static final Logger LOGGER = LogManager.getLogger("XacMinh");
     private static final String OPTIFINE = "OptiFine";
-    private static final String[] MINECRAFT_FILES = {"1_13.bin", "1_13_1.bin", "1_13_2.bin", "1_14.bin", "1_14_1.bin", "1_14_2.bin", "1_14_4.bin", "1_15.bin", "1_15_1.bin", "1_15_2.bin", "1_16.bin", "1_16_1.bin", "1_16_2.bin", "1_16_3.bin", "1_16_4.bin", "1_16_5.bin", "a.bin", "ao.bin", "b.bin", "bo.bin", "c.bin", "co.bin", "d.bin", "do.bin", "e.bin", "eo.bin", "OptiFine 1_13_1.bin", "OptiFine 1_13_2.bin", "OptiFine 1_14_2.bin", "OptiFine 1_14_3.bin", "OptiFine 1_14_4.bin", "OptiFine 1_15_2.bin", "OptiFine 1_16_1.bin", "OptiFine 1_16_2.bin", "OptiFine 1_16_3.bin", "OptiFine 1_16_4.bin", "OptiFine 1_16_5.bin"};
+    private static final String[] MINECRAFT_FILES = { "1_13.bin", "1_13_1.bin", "1_13_2.bin", "1_14.bin", "1_14_1.bin",
+            "1_14_2.bin", "1_14_4.bin", "1_15.bin", "1_15_1.bin", "1_15_2.bin", "1_16.bin", "1_16_1.bin", "1_16_2.bin",
+            "1_16_3.bin", "1_16_4.bin", "1_16_5.bin", "a.bin", "ao.bin", "b.bin", "bo.bin", "c.bin", "co.bin", "d.bin",
+            "do.bin", "e.bin", "eo.bin", "OptiFine 1_13_1.bin", "OptiFine 1_13_2.bin", "OptiFine 1_14_2.bin",
+            "OptiFine 1_14_3.bin", "OptiFine 1_14_4.bin", "OptiFine 1_15_2.bin", "OptiFine 1_16_1.bin",
+            "OptiFine 1_16_2.bin", "OptiFine 1_16_3.bin", "OptiFine 1_16_4.bin", "OptiFine 1_16_5.bin" };
     private long lastVersionCheckTime = 0;
     private static final long CACHE_DURATION = 5 * 60 * 1000;
-    private String cachedLatestVersion = "1.06";
+    private String cachedLatestVersion = "1.05";
 
     private String getExpectedVersion() {
         long now = System.currentTimeMillis();
@@ -47,7 +52,8 @@ public class VerifyController {
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream()))) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream()))) {
                     String ver = reader.readLine();
                     if (ver != null && !ver.isEmpty()) {
                         cachedLatestVersion = ver.trim();
@@ -57,13 +63,14 @@ public class VerifyController {
             } catch (Exception e) {
                 LOGGER.error("Failed to fetch version from GitHub: " + e.getMessage());
             } finally {
-                if (conn != null) conn.disconnect();
+                if (conn != null)
+                    conn.disconnect();
             }
         }
         return cachedLatestVersion;
     }
 
-    @PostMapping(value = "/xacminh", headers = {"content-type=text/*"})
+    @PostMapping(value = "/xacminh", headers = { "content-type=text/*" })
     public ResponseEntity<Void> verify(@RequestBody byte[] requestContent) {
         String[] content = decrypt(Base64.getDecoder().decode(Utils.decompressGzip(requestContent)));
 
@@ -198,7 +205,7 @@ public class VerifyController {
         }
 
         try (Connection conn = Utils.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, verified);
             stmt.setString(2, username);
@@ -223,14 +230,16 @@ public class VerifyController {
         }
 
         String[] parts = sessionTokenStr.split("\\|");
-        if (parts.length != 2) return false;
+        if (parts.length != 2)
+            return false;
         String token = parts[0];
         String hmac = parts[1];
 
         // verify hmac
         try {
             javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-            javax.crypto.spec.SecretKeySpec hmacKeySpec = new javax.crypto.spec.SecretKeySpec(java.util.Base64.getDecoder().decode("Xk9pLm4VqA2wF6zT8yH1uA=="), "HmacSHA256");
+            javax.crypto.spec.SecretKeySpec hmacKeySpec = new javax.crypto.spec.SecretKeySpec(
+                    java.util.Base64.getDecoder().decode("Xk9pLm4VqA2wF6zT8yH1uA=="), "HmacSHA256");
             mac.init(hmacKeySpec);
             byte[] hmacBytes = mac.doFinal((token + username).getBytes(java.nio.charset.StandardCharsets.UTF_8));
             String calculatedHmac = java.util.Base64.getEncoder().encodeToString(hmacBytes);
@@ -242,7 +251,8 @@ public class VerifyController {
         }
 
         try (java.sql.Connection conn = Utils.connect();
-             java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT token_issued_at FROM players WHERE name = ? AND session_token = ? AND deleted = 0")) {
+                java.sql.PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT token_issued_at FROM players WHERE name = ? AND session_token = ? AND deleted = 0")) {
             stmt.setString(1, username);
             stmt.setString(2, token);
 
@@ -250,10 +260,11 @@ public class VerifyController {
                 if (result.next()) {
                     long issuedAt = result.getLong(1);
                     if (System.currentTimeMillis() - issuedAt > 90000 && issuedAt != 0) { // 90 seconds TTL
-                        return false; 
+                        return false;
                     }
                     // Valid! Now burn the token.
-                    try (java.sql.PreparedStatement updateStmt = conn.prepareStatement("UPDATE players SET session_token = NULL WHERE name = ? AND session_token = ?")) {
+                    try (java.sql.PreparedStatement updateStmt = conn.prepareStatement(
+                            "UPDATE players SET session_token = NULL WHERE name = ? AND session_token = ?")) {
                         updateStmt.setString(1, username);
                         updateStmt.setString(2, token);
                         updateStmt.executeUpdate();
@@ -282,7 +293,8 @@ public class VerifyController {
                     new IvParameterSpec(iv));
             byte[] decrypt = cipher.doFinal(Arrays.copyOfRange(bytes, 16, bytes.length));
             return new String(decrypt).split("\n");
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException | NullPointerException e) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException
+                | BadPaddingException | InvalidAlgorithmParameterException | NullPointerException e) {
             LOGGER.error(e);
             return null;
         }

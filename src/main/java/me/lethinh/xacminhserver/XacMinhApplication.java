@@ -53,7 +53,7 @@ public class XacMinhApplication implements ApplicationRunner, WebMvcConfigurer {
                 (ApplicationListener<ContextClosedEvent>) event -> LOGGER.info("Xac Minh Server da thoat!"));
         ConfigurableApplicationContext ctx = application.run(args);
         Runtime.getRuntime().addShutdownHook(new Thread(ctx::close));
-        Utils.checkLicense(ctx);
+        // Utils.checkLicense(ctx);
     }
 
 }
